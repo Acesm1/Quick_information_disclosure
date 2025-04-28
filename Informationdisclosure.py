@@ -1,3 +1,4 @@
+import argparse
 import requests
 import json
 import re
@@ -10,7 +11,6 @@ from selenium.common.exceptions import WebDriverException
 from requests.exceptions import RequestException
 
 # ====== CONFIGURATION ======
-TARGET = input("enter a url to scan")  # <-- Change to your target
 TIMEOUT = 5  # Seconds to wait for loading
 HEADLESS = True  # Set to False if you want to see browser
 # ============================
@@ -39,6 +39,12 @@ sensitive_patterns = [
     r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b", # IP Addresses
     r"Exception|Stack trace|Warning|Error"  # Debug messages
 ]
+
+# Argument parsing for target URL
+def parse_arguments():
+    parser = argparse.ArgumentParser(description="Quick Information Disclosure Tool")
+    parser.add_argument("-u", "--url", required=True, help="Target URL to scan")
+    return parser.parse_args()
 
 # Start Selenium browser
 def start_browser():
@@ -156,6 +162,10 @@ def run_nmap(ip_address):
 
 # Main function
 def main():
+    args = parse_arguments()
+    global TARGET
+    TARGET = args.url  # Set TARGET based on the -u flag
+
     print(f"\n[+] Starting Full Information Disclosure Scan on {TARGET}")
     check_sensitive_files()
     search_html_comments()
@@ -165,4 +175,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
