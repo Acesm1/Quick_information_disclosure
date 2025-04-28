@@ -4,10 +4,30 @@ import json
 import re
 import time
 import subprocess
-from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.common.exceptions import WebDriverException
+from datetime import datetime
+
+# Try to import optional modules and handle errors
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    print("[!] BeautifulSoup (bs4) is not installed. Install it using 'pip install beautifulsoup4'")
+    exit()
+
+try:
+    from selenium import webdriver
+    from selenium.webdriver.chrome.options import Options
+    from selenium.common.exceptions import WebDriverException
+except ImportError:
+    print("[!] Selenium is not installed. Install it using 'pip install selenium'")
+    exit()
+
+try:
+    from colorama import Fore, Style, init
+    init(autoreset=True)
+except ImportError:
+    print("[!] Colorama is not installed. Install it using 'pip install colorama'")
+    exit()
+
 from requests.exceptions import RequestException
 
 # ====== CONFIGURATION ======
@@ -42,7 +62,7 @@ sensitive_patterns = [
 
 # Argument parsing for target URL
 def parse_arguments():
-    parser = argparse.ArgumentParser(description="Quick Information Disclosure Tool")
+    parser = argparse.ArgumentParser(description="Quick Information Disclosure Tool by darknickon")
     parser.add_argument("-u", "--url", required=True, help="Target URL to scan")
     return parser.parse_args()
 
@@ -57,39 +77,54 @@ def start_browser():
     driver = webdriver.Chrome(options=chrome_options, desired_capabilities=caps)
     return driver
 
+# Print Banner
+def print_banner():
+    banner = r"""
+  ____             _        _    _ _ _             
+ |  _ \  __ _ _ __(_) ___  | |  (_) (_)_ __   __ _ 
+ | | | |/ _` | '__| |/ __| | |  | | | | '_ \ / _` |
+ | |_| | (_| | |  | | (__  | |__| | | | | | | (_| |
+ |____/ \__,_|_|  |_|\___| |____|_|_|_|_| |_|\__, |
+                                            |___/ 
+
+         Quick Info Disclosure Scanner
+               by ace-Smith001
+    """
+    print(Fore.BLUE + banner + Style.RESET_ALL)
+
 # Check for sensitive files
 def check_sensitive_files():
-    print("\n[+] Checking for sensitive files...\n")
+    print(Fore.BLUE + "\n[+] Checking for sensitive files...\n" + Style.RESET_ALL)
     session = requests.Session()
     for path in sensitive_paths:
         try:
             url = f"{TARGET.rstrip('/')}/{path.lstrip('/')}"
             response = session.get(url, timeout=TIMEOUT)
             if response.status_code == 200:
-                print(f"    [!] Found accessible: {url}")
+                print(Fore.BLUE + f"    [!] Found accessible: {url}" + Style.RESET_ALL)
             elif response.status_code in [301, 302]:
-                print(f"    [*] Redirected (potentially interesting): {url}")
+                print(Fore.BLUE + f"    [*] Redirected (potentially interesting): {url}" + Style.RESET_ALL)
         except RequestException as e:
-            print(f"    [-] Request failed for {url}: {str(e)}")
+            print(Fore.BLUE + f"    [-] Request failed for {url}: {str(e)}" + Style.RESET_ALL)
 
 # Search homepage for HTML comments
 def search_html_comments():
-    print("\n[+] Searching HTML source for hidden comments...\n")
+    print(Fore.GREEN + "\n[+] Searching HTML source for hidden comments...\n" + Style.RESET_ALL)
     try:
         response = requests.get(TARGET, timeout=TIMEOUT)
         soup = BeautifulSoup(response.text, "html.parser")
         comments = soup.find_all(string=lambda text: isinstance(text, type(soup.comment)))
         if comments:
             for comment in comments:
-                print(f"    [!] Comment found: {comment.strip()}")
+                print(Fore.BLUE + f"    [!] Comment found: {comment.strip()}" + Style.RESET_ALL)
         else:
-            print("    [-] No comments found.")
+            print(Fore.BLUE + "    [-] No comments found." + Style.RESET_ALL)
     except RequestException as e:
-        print(f"    [-] Failed to fetch homepage: {str(e)}")
+        print(Fore.BLUE + f"    [-] Failed to fetch homepage: {str(e)}" + Style.RESET_ALL)
 
 # Try injecting payloads to trigger errors
 def trigger_error_messages():
-    print("\n[+] Testing for error message leaks...\n")
+    print(Fore.GREEN + "\n[+] Testing for error message leaks...\n" + Style.RESET_ALL)
     session = requests.Session()
     for payload in payloads:
         try:
@@ -97,14 +132,14 @@ def trigger_error_messages():
             response = session.get(test_url, timeout=TIMEOUT)
             for signature in error_signatures:
                 if signature.lower() in response.text.lower():
-                    print(f"    [!] Error Leak Detected at {test_url}: {signature}")
+                    print(Fore.BLUE + f"    [!] Error Leak Detected at {test_url}: {signature}" + Style.RESET_ALL)
                     break
         except RequestException as e:
-            print(f"    [-] Request failed for payload {payload}: {str(e)}")
+            print(Fore.GREEN + f"    [-] Request failed for payload {payload}: {str(e)}" + Style.RESET_ALL)
 
 # Analyze network traffic for leaks
 def analyze_network_traffic():
-    print("\n[+] Analyzing Network Traffic for sensitive leaks...\n")
+    print(Fore.BLUE + "\n[+] Analyzing Network Traffic for sensitive leaks...\n" + Style.RESET_ALL)
     driver = start_browser()
     ip_addresses_found = set()
 
@@ -125,7 +160,7 @@ def analyze_network_traffic():
 
                         leaks = extract_sensitive_info(body)
                         if leaks:
-                            print(f"[!] Leak Detected in Network Response:\n    {leaks}\n")
+                            print(Fore.BLUE + f"[!] Leak Detected in Network Response:\n    {leaks}\n" + Style.RESET_ALL)
                             for leak in leaks:
                                 if re.match(r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b", leak):
                                     ip_addresses_found.add(leak)
@@ -135,7 +170,7 @@ def analyze_network_traffic():
                 pass  # Ignore badly formatted logs
 
     except WebDriverException as e:
-        print(f"    [-] WebDriver error: {str(e)}")
+        print(Fore.BLUE + f"    [-] WebDriver error: {str(e)}" + Style.RESET_ALL)
     finally:
         driver.quit()
 
@@ -153,12 +188,12 @@ def extract_sensitive_info(text):
 
 # Nmap scanner
 def run_nmap(ip_address):
-    print(f"\n[+] Running Nmap Scan on {ip_address}...\n")
+    print(Fore.BLUE + f"\n[+] Running Nmap Scan on {ip_address}...\n" + Style.RESET_ALL)
     try:
         result = subprocess.check_output(["nmap", "-sS", "-T4", ip_address], stderr=subprocess.STDOUT, text=True)
-        print(result)
+        print(Fore.BLUE + result + Style.RESET_ALL)
     except subprocess.CalledProcessError as e:
-        print(f"    [!] Nmap failed: {e.output}")
+        print(Fore.BLUE + f"    [!] Nmap failed: {e.output}" + Style.RESET_ALL)
 
 # Main function
 def main():
@@ -166,15 +201,22 @@ def main():
     global TARGET
     TARGET = args.url  # Set TARGET based on the -u flag
 
-    print(f"\n[+] Starting Full Information Disclosure Scan on {TARGET}")
+    start_time = datetime.now()
+
+    print_banner()
+    print(Fore.BLUE + f"[*] Scan started at: {start_time}" + Style.RESET_ALL)
     check_sensitive_files()
     search_html_comments()
     trigger_error_messages()
     analyze_network_traffic()
-    print("\n[+] Scan Complete.")
+
+    end_time = datetime.now()
+    print(Fore.BLUE + f"\n[*] Scan finished at: {end_time}" + Style.RESET_ALL)
+    print(Fore.BLUE + f"[*] Total Duration: {end_time - start_time}" + Style.RESET_ALL)
 
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("\n[!] Scan interrupted by user. Exiting...")
+        print(Fore.BLUE + "\n[!] Scan interrupted by user. Exiting..." + Style.RESET_ALL)
+        
