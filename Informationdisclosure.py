@@ -66,6 +66,38 @@ def parse_arguments():
     parser.add_argument("-u", "--url", required=True, help="Target URL to scan")
     return parser.parse_args()
 
+# Print Disclaimer and Wait for User to Accept
+def print_disclaimer():
+    disclaimer = r"""
+DISCLAIMER
+----------
+This tool ("Information Disclosure Scanner by ace-Smith001") is intended for educational and authorized security testing purposes only.
+
+Unauthorized scanning, probing, or exploiting of systems you do not own or have explicit permission to test is illegal and unethical.
+
+Use of this tool on unauthorized targets may result in criminal charges and penalties. Always obtain proper authorization before scanning any network, web application, or system.
+
+Sensitive Information Disclosure Warning:
+This tool may discover sensitive information including, but not limited to:
+- Email addresses
+- Internal IP addresses
+- Session tokens or API keys
+- Database errors
+- System configuration leaks
+- Hidden backup files
+- Exposed admin panels
+
+Handling of any discovered sensitive data must comply with all applicable laws and ethical guidelines.
+
+By using this tool, you accept full responsibility and liability. The developer assumes no responsibility for misuse or damage caused by this tool.
+"""
+    print(Fore.YELLOW + disclaimer + Style.RESET_ALL)
+    try:
+        input(Fore.CYAN + "\n[!] Press ENTER to accept the disclaimer and continue..." + Style.RESET_ALL)
+    except KeyboardInterrupt:
+        print(Fore.RED + "\n[!] User aborted at disclaimer. Exiting." + Style.RESET_ALL)
+        exit()
+        
 # Start Selenium browser
 def start_browser():
     chrome_options = Options()
@@ -228,6 +260,7 @@ def main():
     start_time = datetime.now()
 
     print_banner()
+    print_disclaimer()
     print(Fore.BLUE + f"[*] Scan started at: {start_time}" + Style.RESET_ALL)
     check_sensitive_files()
     search_html_comments()
