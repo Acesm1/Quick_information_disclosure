@@ -2,20 +2,23 @@
 echo [+] Starting setup for Information Disclosure Scanner...
 
 :: Install Python packages
-echo [*] Installing Python libraries (requests, beautifulsoup4, selenium)...
+echo [*] Installing Python libraries (requests, beautifulsoup4, selenium, colorama)...
 pip install requests
 pip install beautifulsoup4
 pip install selenium
+pip install colorama
 
-:: Reminder for Chrome
-echo [!] Make sure you have Google Chrome installed: https://www.google.com/chrome/
+:: Reminder for Google Chrome
+echo [*] Checking Google Chrome installation...
+echo [!] If not installed, download Google Chrome from: https://www.google.com/chrome/
 
 :: Reminder for Chromedriver
-echo [!] Download Chromedriver that matches your Chrome version: https://sites.google.com/chromium.org/driver/
+echo [*] Reminder: Download the matching Chromedriver for your Chrome version:
+echo     https://sites.google.com/chromium.org/driver/
 
 :: Reminder for Nmap
-echo [!] Please install Nmap manually from: https://nmap.org/download.html
-echo [!] During Nmap installation, choose to "Add Nmap to PATH".
+echo [!] Please manually install Nmap from: https://nmap.org/download.html
+echo [!] During Nmap installation, make sure to select "Add Nmap to PATH".
 
-echo [*] Setup completed successfully!
+echo [+] Setup completed successfully!
 pause
