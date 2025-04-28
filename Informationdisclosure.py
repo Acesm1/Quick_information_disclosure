@@ -87,8 +87,8 @@ def print_banner():
  |____/ \__,_|_|  |_|\___| |____|_|_|_|_| |_|\__, |
                                             |___/ 
 
-         Quick Info Disclosure Scanner
-               by ace-Smith001
+          Quick Info Disclosure Scanner
+                by ace-Smith001
     """
     print(Fore.BLUE + banner + Style.RESET_ALL)
 
@@ -176,7 +176,10 @@ def analyze_network_traffic():
 
     # Nmap Scan for leaked IPs
     for ip in ip_addresses_found:
-        run_nmap(ip)
+        try:
+            run_nmap(ip)
+        except Exception as e:
+            print(Fore.RED + f"    [!] Failed to scan IP {ip}: {str(e)}" + Style.RESET_ALL)
 
 # Extract sensitive info using regex
 def extract_sensitive_info(text):
@@ -186,14 +189,35 @@ def extract_sensitive_info(text):
         findings.extend(matches)
     return findings
 
-# Nmap scanner
-def run_nmap(ip_address):
-    print(Fore.BLUE + f"\n[+] Running Nmap Scan on {ip_address}...\n" + Style.RESET_ALL)
+# Enhanced Nmap scanner
+def run_nmap(ip_address, ports="1-65535", timing="T4", output_file="scan_results.txt"):
+    """
+    Enhanced Nmap Scan Function
+    - Performs a detailed Nmap scan with customizable ports, timing, and output options.
+    """
+    print(Fore.BLUE + f"\n[+] Running Enhanced Nmap Scan on {ip_address}...\n" + Style.RESET_ALL)
     try:
-        result = subprocess.check_output(["nmap", "-sS", "-T4", ip_address], stderr=subprocess.STDOUT, text=True)
+        # Construct the Nmap command with additional options
+        nmap_command = [
+            "nmap",
+            "-sS",        # SYN Scan
+            "-sV",        # Service Version Detection
+            "-O",         # OS Detection
+            "-p", ports,  # Scan specified ports
+            "-T" + timing, # Timing template
+            "-oN", output_file,  # Save results to file
+            ip_address
+        ]
+        # Execute the Nmap command and capture output
+        result = subprocess.check_output(nmap_command, stderr=subprocess.STDOUT, text=True)
         print(Fore.BLUE + result + Style.RESET_ALL)
+        print(Fore.GREEN + f"\n[+] Nmap results saved to '{output_file}'" + Style.RESET_ALL)
     except subprocess.CalledProcessError as e:
-        print(Fore.BLUE + f"    [!] Nmap failed: {e.output}" + Style.RESET_ALL)
+        print(Fore.RED + f"    [!] Nmap failed: {e.output}" + Style.RESET_ALL)
+    except FileNotFoundError:
+        print(Fore.RED + "    [!] Nmap is not installed or not found in PATH. Please install Nmap to use this feature." + Style.RESET_ALL)
+    except Exception as e:
+        print(Fore.RED + f"    [!] An unexpected error occurred during the Nmap scan: {str(e)}" + Style.RESET_ALL)
 
 # Main function
 def main():
@@ -219,4 +243,3 @@ if __name__ == "__main__":
         main()
     except KeyboardInterrupt:
         print(Fore.BLUE + "\n[!] Scan interrupted by user. Exiting..." + Style.RESET_ALL)
-        
