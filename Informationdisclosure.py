@@ -37,7 +37,24 @@ HEADLESS = True  # Set to False if you want to see browser
 
 # Common sensitive files
 sensitive_paths = [
-    "robots.txt", "sitemap.xml", ".git/", "backup.zip", "config.php.bak", "db.sql", "admin/", "phpinfo.php"
+    ".git", "/.svn/", "/.env", "/.DS_Store",
+    "robots.txt", "/sitemap.xml", "/crossdomain.xml",
+    "phpinfo.php", "/info.php", "/test.php", "/debug.php",
+    "admin", "/admin/login", "/admin/dashboard", "/admin/panel",
+    "backup", "/backup.zip", "/db.sql", "/database.sql", "/dump.sql",
+    "config.php", "/config.bak", "/config.old", "/settings.py",
+    ".htaccess", "/.htpasswd", "/web.config",
+    "wp-config.php", "/env.php", "/local.xml",
+    "uploads", "/files/", "/documents/", "/private/",
+    "dev", "staging", "test", "old/", "temp", "tmp",
+    "logs", "log", "server.log", "error.log",
+    "adminer.php", "pma", "phpmyadmin", "monitor", "metrics",
+    ".well-known/security.txt", ".well-known", "server-status",
+    "user.json", "users.csv", "users.xml", "account.json",
+    "version.txt", "/release-notes.txt", "changelog.txt",
+    "v1/api", "v1/admin", "v1/private", "v2/admin", "internal-api/",
+};
+
 ]
 
 # Bad payloads to trigger errors
